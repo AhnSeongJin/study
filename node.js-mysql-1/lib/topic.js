@@ -28,7 +28,6 @@ exports.page = function(request, response){
       if(error2){ //에러값이 있다면 에러값 던지고 멈춤
         throw error2;
       }
-      console.log(topic)
       var title = topic[0].title;
       var description = topic[0].description;
       var list = template.list(topics);

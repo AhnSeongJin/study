@@ -1,9 +1,7 @@
 var http = require('http');
 var url = require('url');
-var qs = require('querystring');
-var template = require('./lib/template.js');
-var db = require('./lib/db');
 var topic = require('./lib/topic');
+var author = require('./lib/author');
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
@@ -25,6 +23,16 @@ var app = http.createServer(function(request,response){
       topic.update_process(request, response);
     } else if(pathname === '/delete_process'){ //글 삭제
       topic.delete_process(request, response);
+    } else if(pathname === '/author'){ //저자 홈페이지
+      author.home(request, response);
+    } else if(pathname === '/author/create_process'){ //저자 생성
+      author.create_process(request, response);
+    } else if(pathname === '/author/update'){ //저자 수정
+      author.update(request, response);
+    } else if(pathname === '/author/update_process'){ //저자 수정
+      author.update_process(request, response);
+    } else if(pathname === '/author/delete_process'){ //저자 수정
+      author.delete_process(request, response);
     } else {
       response.writeHead(404);
       response.end('Not found');
