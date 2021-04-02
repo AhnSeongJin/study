@@ -4,10 +4,12 @@ const port = 3000;
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var compression = require('compression');
+var helmet = require('helmet')
 
 var indexRouter = require('./routes/index');
 var topicRouter = require('./routes/topic');
 
+app.use(helmet()) //보안
 app.use(express.static('public')); //정적파일(public에서 정적파일 찾음)
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression()); //압축
