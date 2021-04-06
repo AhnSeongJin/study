@@ -5,8 +5,51 @@ var path = require('path');
 var sanitizeHtml = require('sanitize-html');
 var qs = require('querystring');
 var template = require('../lib/template.js');
-var auth = require('../lib/auth');
 
+var authData = {
+  email:'egoing777@gmail.com',
+  password:'111111',
+  nickname:'egoing'
+}
+
+router.get('/login', function(request, response){
+  var title = 'WEB - login';
+  var list = template.list(request.list);
+  var html = template.HTML(title, list, `
+    <form action="/auth/login_process" method="post">
+      <p><input type="text" name="email" placeholder="email"></p>
+      <p><input type="password" name="pwd" placeholder="password"></p>
+      <p>
+        <input type="submit" value="login">
+      </p>
+    </form>
+  `, '');
+  response.send(html);
+});
+
+router.post('/login_process', function(request, response){
+  var post = request.body;
+  var email = post.email;
+  var password = post.pwd;
+  if(email === authData.email && password === authData.password){ //success
+    request.session.is_logined = true;
+    request.session.nickname = authData.nickname;
+    //save함수 없는 경우 저장전 바로 redirect 해서 로그인 안되는 경우 발생
+    request.session.save(function(){ //저장 후 redirection
+      response.redirect('/');
+    });
+  } else {
+    response.send('Who?');
+  }
+});
+
+router.get('/logout', function(request, response){
+  request.session.destroy(function(err){
+    response.redirect('/');
+  });
+});
+
+/*
 //기존에 있던 url 값에서 topic 제거, main에서 /topic 으로 요청했기 때문에
 
 router.get('/create', function(request, response){
@@ -22,15 +65,11 @@ router.get('/create', function(request, response){
         <input type="submit">
       </p>
     </form>
-  `, '', auth.statusUI(request, response));
+  `, '');
   response.send(html);
 });
 
 router.post('/create_process', function(request, response){
-  if(!auth.isOwner(request, response)){ //비로그인시 홈으로
-    response.redirect('/');
-    return false;
-  }
   var post = request.body;
   var title = post.title;
   var description = post.description;
@@ -57,18 +96,13 @@ router.get('/update/:pageId', function(request, response){
         </p>
       </form>
       `,
-      `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,
-      auth.statusUI(request, response)
+      `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`
     );
     response.send(html);
   });
 });
 
 router.post('/update_process', function(request, response){
-  if(!auth.isOwner(request, response)){ //비로그인시 홈으로
-    response.redirect('/');
-    return false;
-  }
   var post = request.body;
   var id = post.id;
   var title = post.title;
@@ -81,10 +115,6 @@ router.post('/update_process', function(request, response){
 });
 
 router.post('/delete_process', function(request, response){
-  if(!auth.isOwner(request, response)){ //비로그인시 홈으로
-    response.redirect('/');
-    return false;
-  }
   var post = request.body;
   var id = post.id;
   var filteredId = path.parse(id).base;
@@ -113,11 +143,11 @@ router.get('/:pageId', function(request, response, next){
           <form action="/topic/delete_process" method="post">
             <input type="hidden" name="id" value="${sanitizedTitle}">
             <input type="submit" value="delete">
-          </form>`,
-          auth.statusUI(request, response)
+          </form>`
       );
       response.send(html);
     }
   });
 });
-module.exports = router;
+*/
+module.exports = router; 

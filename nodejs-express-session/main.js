@@ -5,14 +5,24 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var helmet = require('helmet')
-
-var indexRouter = require('./routes/index');
-var topicRouter = require('./routes/topic');
+var session = require('express-session')
+var FileStore = require('session-file-store')(session)
 
 app.use(helmet()) //보안
 app.use(express.static('public')); //정적파일(public에서 정적파일 찾음)
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression()); //압축
+app.use(session({
+  secret: 'asdgsdgr!@#@$!sagb', //secret값은 따로 설정
+  resave: false,
+  saveUninitialized: true, //session이 필요하기 전까지는 구동하지 않음
+  store: new FileStore() //FileStore로 session값을 sessions 파일에 저장
+}))
+
+var indexRouter = require('./routes/index');
+var topicRouter = require('./routes/topic');
+var authRouter = require('./routes/auth');
+
 //미들웨어 등록하기
 //모든 get방식 요청에서만 사용, 전체에서 사용되는 것이 아닌 get방식에서만 사용되기 때문
 //app.use() 는 전체 에서 사용할때
@@ -28,6 +38,7 @@ app.get('*', function(request, response, next){
 app.use('/', indexRouter);
 // /topic 으로 시작하는 주소들에게 topicRouter 이름의 미들웨어를 적용
 app.use('/topic', topicRouter);
+app.use('/auth', authRouter);
 
 
 
