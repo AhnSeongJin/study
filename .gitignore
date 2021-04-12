@@ -165,4 +165,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# mongoDB 비밀 정보 보호(추가)
+dev.js
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,node
