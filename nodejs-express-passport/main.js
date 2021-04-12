@@ -7,6 +7,7 @@ var compression = require('compression');
 var helmet = require('helmet')
 var session = require('express-session')
 var FileStore = require('session-file-store')(session)
+var flash = require('connect-flash');
 
 app.use(helmet()) //보안
 app.use(express.static('public')); //정적파일(public에서 정적파일 찾음)
@@ -18,6 +19,100 @@ app.use(session({
   saveUninitialized: true, //session이 필요하기 전까지는 구동하지 않음
   store: new FileStore() //FileStore로 session값을 sessions 파일에 저장
 }))
+app.use(flash()); //session을 사용하기 때문에 session 밑에 설치
+
+var authData = {
+  email:'egoing777@gmail.com',
+  password:'111111',
+  nickname:'egoing'
+}
+
+// 무조건 session 밑에 위치!
+var passport = require('passport')
+  , LocalStrategy = require('passport-local').Strategy;
+
+// passport 사용하기
+// Passport.js는 내부적으로 express-session을 이용합니다. 두개의 미들웨어를 연결하는 방법.
+app.use(passport.initialize());
+app.use(passport.session());
+
+// =============<serialize>=============
+// serialize : session-store에 저장
+
+//로그인 성공시 딱 한번 호출되어 사용자의 식별값을 session에 저장
+passport.serializeUser(function(user, done) {
+  console.log('serializeUser', user);
+  done(null, user.email);
+  // done(null, user.id);
+});
+
+//저장된 데이터를 기준으로 필요한 정보를 조회할때 사용
+passport.deserializeUser(function(id, done) { //각 페이지 방문할때마다 데이터 조회
+  console.log('deserializeUser', id);
+  done(null, authData);
+  // User.findById(id, function(err, user) {
+  //   done(err, user);
+  // });
+});
+// =============</serialize>=============
+
+// 자격확인 (로그인 성공여부 확인)
+passport.use(new LocalStrategy(
+  { // form 필드명을 원하는데로, 다른 방법은 form을 페이지 예시대로 맞추기
+    usernameField: 'email',
+    passwordField: 'pwd'
+  },
+  function(username, password, done) {
+    console.log('LocalStrategy', username, password);
+    if(username === authData.email){ //유저이름 일치
+      console.log('유저이름 일치');
+      if(password === authData.password){ //로그인 성공
+        console.log('로그인 성공');
+        return done(null, authData);
+      } else { //비밀번호 불일치
+        console.log('비밀번호 불일치');
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+    } else { //유저이름 불일치
+      console.log('유저이름 불일치');
+      return done(null, false, { message: 'Incorrect username.' });
+    }
+    // 페이지 예시 코드
+    /* User.findOne({ username: username }, function (err, user) {
+      if (err) { return done(err); } //에러
+      if (!user) { // 유저이름 불일치
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) { //비밀번호 불일치
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user); //로그인 성공
+    }); */
+  }
+));
+
+// ==========<인증 구현>==========
+/*
+app.post('/auth/login_process', //path
+  passport.authenticate('local', {
+    successRedirect: '/', //로그인 성공
+    failureRedirect: '/auth/login' //로그인 실패
+  }));
+*/
+// deserializeUser 안먹혀서 코드 변경
+app.post('/auth/login_process', //path
+  passport.authenticate('local', {failureRedirect: '/auth/login', failureFlash:true}),
+  function(request, response){
+    request.session.save(function(){ //저장 후 redirection
+      response.redirect('/');
+    });
+  }
+);
+
+//Custom Callback 함수
+//콜백부터 다시하기
+
+// ==========</인증 구현>==========
 
 var indexRouter = require('./routes/index');
 var topicRouter = require('./routes/topic');
