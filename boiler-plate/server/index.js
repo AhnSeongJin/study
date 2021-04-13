@@ -29,6 +29,11 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/api/hello', (req, res) => {
+  res.send("Hello World!");
+})
+
+
 // postman 으로 테스트
 // Register Route 생성 코드
 app.post('/api/users/register', (req, res) => {
