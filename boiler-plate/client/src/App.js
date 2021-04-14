@@ -12,6 +12,7 @@ import {
 import LandingPage from './components/views/LandingPage/LandingPage';
 import LoginPage from './components/views/LoginPage/LoginPage';
 import RegisterPage from './components/views/RegisterPage/RegisterPage';
+import AUTH from './hoc/auth'
 
 function App() {
   return (
@@ -26,9 +27,9 @@ function App() {
         */}
         <Switch>
           {/*Route 한줄로 쓰기*/}
-          <Route exact path="/" component={LandingPage} />
-          <Route exact path="/login" component={LoginPage} />
-          <Route exact path="/register" component={RegisterPage} />
+          <Route exact path="/" component={AUTH(LandingPage, null)} />
+          <Route exact path="/login" component={AUTH(LoginPage, false)} />
+          <Route exact path="/register" component={AUTH(RegisterPage, false)} />
           {/* <Route exact path="/">
             <LandingPage />
           </Route>
